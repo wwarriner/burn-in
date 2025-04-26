@@ -153,7 +153,7 @@ class Burn(abc.ABC):
 
     def burn(self, device_config: dict) -> list[Summary]:
         """Run matmul on all instances of the associated device type."""
-        with self._make_pool_context() as pool:
+        with self.create_pool() as pool:
             results = pool.starmap(
                 self._run_on_device,
                 [[device_config]] * self._get_device_count(),
@@ -175,6 +175,10 @@ class Burn(abc.ABC):
 
         return results
 
+    @abc.abstractmethod
+    def create_pool(self) -> Pool:
+        """Create a Pool."""
+        ...
 
     @abc.abstractmethod
     def _get_device_name(self, index: int) -> str: ...
@@ -236,7 +240,8 @@ class CpuBurn(Burn):
 
         return out
 
-    def _make_pool_context(self) -> Pool:
+    def create_pool(self) -> Pool:
+        """Create a CPU pool."""
         return mp.Pool(self._get_device_count())
 
     def _timeit(self, _fn: NullFunction) -> float:
@@ -265,7 +270,8 @@ class GpuBurn(Burn):
     def _get_device_count(self) -> int:
         return t.cuda.device_count() if t.cuda.is_available() else 0
 
-    def _make_pool_context(self) -> Pool:
+    def create_pool(self) -> Pool:
+        """Create a GPU pool."""
         return tmp.Pool(self._get_device_count())
 
     def _timeit(self, _fn: NullFunction) -> float:
