@@ -1,0 +1,7 @@
+computation:
+  cpu:
+    matrix_size: 2000
+    replicates: 10
+  gpu:
+    matrix_size: 20000
+    replicates: 10
