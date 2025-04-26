@@ -50,6 +50,7 @@ class Summary:
             confidence (float, optional): _description_. Defaults to 0.99.
 
         """
+        count = len(_v)
         mean = st.tmean(_v)
         var = st.tvar(_v)
         ci = self._bootstrap_ci(_v, confidence=confidence)
@@ -57,6 +58,7 @@ class Summary:
         ci_mean_proportion = (abs(mean - ci[0]) / mean, abs(ci[1] - mean) / mean)
         total = sum(_v)
 
+        self.count: int = count
         self.confidence: float = confidence
         self.mean: float = mean
         self.var: float = var
