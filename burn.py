@@ -175,6 +175,10 @@ class Burn(abc.ABC):
 
         return results
 
+
+    @abc.abstractmethod
+    def _get_device_name(self, index: int) -> str: ...
+
     def _run_on_device(
         self,
         device_config: dict,
@@ -218,6 +222,9 @@ class CpuBurn(Burn):
     def _get_device(self) -> str:
         return "cpu"
 
+    def _get_device_name(self, index: int) -> str:
+        return f"cpu:{index}"
+
     def _get_device_count(self) -> int:
         if "SLURM_CPUS_ON_NODE" in os.environ:
             out = int(os.environ["SLURM_CPUS_ON_NODE"])
@@ -252,8 +259,8 @@ class GpuBurn(Burn):
     def _device_type_plural(self) -> str:
         return "gpus"
 
-    def _get_device(self) -> int | str:
-        return t.cuda.current_device()
+    def _get_device_name(self, index: int) -> str:
+        return f"cuda:{index}"
 
     def _get_device_count(self) -> int:
         return t.cuda.device_count() if t.cuda.is_available() else 0
