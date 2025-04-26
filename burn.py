@@ -155,12 +155,27 @@ class Burn(abc.ABC):
         """Initialize a Burn object."""
         self._results: dict[str, Summary] | None = None
 
-                self._run_on_device,
-                [[device_config]] * self._get_device_count(),
-            )
+    def burn_async(self, device_config: dict, pool: Pool) -> None:
+        """Run matmul on all instances of the associated device type.
 
+        Returns asynchronous results.
+        """
+        self._results = {}
+        for index in range(self._get_device_count()):
+            args = (
+                self._get_device_name(index),
+                self._get_device(index),
+                device_config,
+                self._timeit,
+            )
+            pool.apply_async(
+                self._run_on_device,
+                args,
+                callback=self._collect_result,
+                error_callback=self._log_error,
+            )
         LOG.info(
-            "%s results across %d %s",
+            "%s: running across %d %s",
             self._device_type_singular,
             self._get_device_count(),
             self._device_type_plural,
@@ -196,24 +211,27 @@ class Burn(abc.ABC):
         """Create a Pool."""
         ...
 
-    @abc.abstractmethod
-    def _get_device_name(self, index: int) -> str: ...
-
+    @staticmethod
     def _run_on_device(
-        self,
+        device_name: str,
+        device: int | str,
         device_config: dict,
-    ) -> Summary:
+        timeit_fn: Callable[[NullFunction], float],
+    ) -> tuple[str, Summary]:
+        """Run matmul on supplied device.
+
+        Returns device and Summary in tuple.
+        """
         matrix_size = device_config["matrix_size"]
         replicate_count = device_config["replicates"]
 
-        device = self._get_device()
         matmul_fn = _to_null_function(
             t.matmul,
             (_square_randn(matrix_size, device), _square_randn(matrix_size, device)),
         )
         _warmup(matmul_fn)
-        times = [self._timeit(matmul_fn) for _ in range(replicate_count)]
-        return Summary(times)
+        times = [timeit_fn(matmul_fn) for _ in range(replicate_count)]
+        return device_name, Summary(times)
 
     @abc.abstractmethod
     def _get_device_count(self) -> int: ...
@@ -339,12 +357,33 @@ def _warmup(_fn: NullFunction) -> None:
         _fn()
 
 
-def burn(config: dict) -> None:
+def burn(config: dict) -> dict[str, Summary]:
     """Perform execution with supplied config."""
+    cpu = CpuBurn()
+    gpu = GpuBurn()
+    devices = (cpu, gpu)
+    device_configs = (config["computation"]["cpu"], config["computation"]["gpu"])
+
     LOG.info("execution started")
-    CpuBurn().burn(config["computation"]["cpu"])
-    GpuBurn().burn(config["computation"]["gpu"])
+    with cpu.create_pool() as cpu_pool, gpu.create_pool() as gpu_pool:
+        pools = (cpu_pool, gpu_pool)
+
+        for device, pool, device_config in zip(devices, pools, device_configs):
+            device.burn_async(device_config, pool)
+
+        for pool in pools:
+            pool.close()
+            pool.join()
+
     LOG.info("execution stopped")
+    LOG.info("displaying results")
+    results = {**(cpu.get_results()), **(gpu.get_results())}
+    for device_name, summary in results.items():
+        LOG.info("device %s", device_name)
+        LOG.info("%s", summary.to_pretty_str())
+    LOG.info("results concluded")
+
+    return results
 
 
 if __name__ == "__main__":
