@@ -52,8 +52,7 @@ class Summary:
         """
         mean = st.tmean(_v)
         var = st.tvar(_v)
-        ci = self.bootstrap_ci(_v, confidence=confidence)
-        ci_mean_proportion = ((mean - ci[0]) / mean, (ci[1] - mean) / mean)
+        ci = self._bootstrap_ci(_v, confidence=confidence)
         total = sum(_v)
 
         self.confidence: float = confidence
@@ -90,7 +89,7 @@ class Summary:
         return scale_boot * np.exp(0.5 * s_boot**2)
 
     @staticmethod
-    def bootstrap_ci(_v: Sequence[float], /, confidence: float) -> tuple[float, float]:
+    def _bootstrap_ci(_v: Sequence[float], /, confidence: float) -> tuple[float, float]:
         """Use bootstrap approach to compute confidence interval of mean.
 
         Got some help from Gemini on this one. This function computes the
