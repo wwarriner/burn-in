@@ -296,6 +296,5 @@ def burn(config: dict) -> None:
 if __name__ == "__main__":
     LOG.info("program started")
     args = conf.get_args()
-    config = conf.load_or_build_config(args.file)
-    burn(config)
+    config = conf.load_or_build_config(args.config_file)
     LOG.info("program stopped")

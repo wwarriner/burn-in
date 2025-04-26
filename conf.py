@@ -61,12 +61,14 @@ def get_args() -> argparse.Namespace:
         ).strip(),
     )
     parser.add_argument(
-        "-f",
-        "--file",
-        metavar="file",
+        "-c",
+        "--config-file",
+        metavar="configfile",
         nargs="?",
         type=PurePath,
         default=DEFAULT_CONFIG_FILE_PATH,
+        help="Path to config file.",
+    )
     )
 
     return parser.parse_args()
