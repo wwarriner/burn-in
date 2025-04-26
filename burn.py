@@ -208,8 +208,9 @@ class Burn(abc.ABC):
     @abc.abstractmethod
     def _make_pool_context(self) -> Pool: ...
 
+    @staticmethod
     @abc.abstractmethod
-    def _timeit(self, _fn: NullFunction) -> float: ...
+    def _timeit(_fn: NullFunction) -> float: ...
 
 
 class CpuBurn(Burn):
@@ -244,7 +245,8 @@ class CpuBurn(Burn):
         """Create a CPU pool."""
         return mp.Pool(self._get_device_count())
 
-    def _timeit(self, _fn: NullFunction) -> float:
+    @staticmethod
+    def _timeit(_fn: NullFunction) -> float:
         """Run the supplied function once and return time in seconds."""
         start_ns = time.perf_counter_ns()
         _fn()
@@ -277,7 +279,8 @@ class GpuBurn(Burn):
         """Create a GPU pool."""
         return tmp.Pool(self._get_device_count())
 
-    def _timeit(self, _fn: NullFunction) -> float:
+    @staticmethod
+    def _timeit(_fn: NullFunction) -> float:
         """Run the supplied function once and return time in seconds."""
         start_ms = t.cuda.Event(enable_timing=True)
         stop_ms = t.cuda.Event(enable_timing=True)
