@@ -203,7 +203,7 @@ class Burn(abc.ABC):
     def _get_device_count(self) -> int: ...
 
     @abc.abstractmethod
-    def _get_device(self) -> int | str: ...
+    def _get_device(self, index: int) -> int | str: ...
 
     @abc.abstractmethod
     def _make_pool_context(self) -> Pool: ...
@@ -223,7 +223,7 @@ class CpuBurn(Burn):
     def _device_type_plural(self) -> str:
         return "cpus"
 
-    def _get_device(self) -> str:
+    def _get_device(self, _: int) -> str:
         return "cpu"
 
     def _get_device_name(self, index: int) -> str:
@@ -263,6 +263,9 @@ class GpuBurn(Burn):
     @property
     def _device_type_plural(self) -> str:
         return "gpus"
+
+    def _get_device(self, index: int) -> int | str:
+        return index
 
     def _get_device_name(self, index: int) -> str:
         return f"cuda:{index}"
