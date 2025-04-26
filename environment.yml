@@ -1,6 +1,5 @@
 name: burnin
 dependencies:
-  # - cuda==12.6.0
   - numpy=2.2.5
   - scipy=1.15.2
   - pip=25.0.1
