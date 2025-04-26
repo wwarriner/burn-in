@@ -66,6 +66,20 @@ class Summary:
         self.ci_percent: tuple[float, float] = ci_mean_proportion
         self.total: float = total
 
+    def to_dict(self) -> dict[str, float]:
+        """Return dict of low-level stats."""
+        return {
+            "count": self.count,
+            "confidence": self.confidence,
+            "mean": self.mean,
+            "variance": self.var,
+            "ci_lower": self.ci[0],
+            "ci_upper": self.ci[1],
+            "ci_frac_of_mean_upper": self.ci_percent[0],
+            "ci_frac_of_mean_lower": self.ci_percent[1],
+            "total": self.total,
+        }
+
     def to_pretty_str(self) -> str:
         """Return interesting statistics in a pretty format."""
         alpha_rep = f"[alpha={1 - self.confidence:.2e}]"
