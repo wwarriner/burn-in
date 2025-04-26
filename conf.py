@@ -11,6 +11,8 @@ from schema import And, Schema, SchemaError, Use
 
 LOG = logging.getLogger("burn")
 
+DEFAULT_OUTPUT_FILE_PATH = PurePath("results.csv")
+
 BLANK_CONFIG: dict = {
     "computation": {
         "cpu": {
@@ -69,6 +71,14 @@ def get_args() -> argparse.Namespace:
         default=DEFAULT_CONFIG_FILE_PATH,
         help="Path to config file.",
     )
+    parser.add_argument(
+        "-o",
+        "--output-file",
+        metavar="outputfile",
+        nargs="?",
+        type=PurePath,
+        default=DEFAULT_OUTPUT_FILE_PATH,
+        help="Desired path to output CSV file.",
     )
 
     return parser.parse_args()

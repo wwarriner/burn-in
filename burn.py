@@ -12,6 +12,7 @@ import os
 import textwrap
 import time
 from collections.abc import Callable, Iterable, Mapping, Sequence
+from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
@@ -22,6 +23,7 @@ import torch.multiprocessing as tmp
 
 if TYPE_CHECKING:
     from multiprocessing.pool import Pool as mpPool
+    from pathlib import PurePath
 
     from torch.multiprocessing.pool import Pool as tmpPool
 
@@ -386,9 +388,35 @@ def burn(config: dict) -> dict[str, Summary]:
     return results
 
 
+def to_csv(filepath: PurePath, results: dict[str, Summary]) -> None:
+    """Write results to CSV file at filepath."""
+    if not results:
+        return
+
+    devices_sorted = sorted(results.keys())
+    stats = {device: results[device].to_dict() for device in devices_sorted}
+
+    stat_names: set[str] = set()
+    for stat in stats.values():
+        stat_names |= stat.keys()
+    stat_names_sorted = sorted(stat_names)
+
+    header_line = ",".join(["device", *stat_names_sorted])
+    lines = [header_line]
+    for device, stat in stats.items():
+        values_sorted = [stat[name] for name in stat_names_sorted]
+        values_to_write = [f"{value:.17f}" for value in values_sorted]
+        stat_line = ",".join([device, *values_to_write])
+        lines.append(stat_line)
+
+    with Path(filepath).open("w") as f:
+        f.write("\n".join(lines))
+
+
 if __name__ == "__main__":
     LOG.info("program started")
     args = conf.get_args()
     config = conf.load_or_build_config(args.config_file)
     results = burn(config)
+    to_csv(args.output_file, results)
     LOG.info("program stopped")
