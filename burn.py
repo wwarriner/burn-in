@@ -12,7 +12,6 @@ import os
 import textwrap
 import time
 from collections.abc import Callable, Iterable, Mapping, Sequence
-from multiprocessing.pool import Pool as mpPool  # type hint
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
@@ -26,8 +25,6 @@ if TYPE_CHECKING:
 
     from torch.multiprocessing.pool import Pool as tmpPool
 
-
-import conf
 
 LOG_LEVEL = logging.INFO
 logging.basicConfig(
