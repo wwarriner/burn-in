@@ -323,4 +323,5 @@ if __name__ == "__main__":
     LOG.info("program started")
     args = conf.get_args()
     config = conf.load_or_build_config(args.config_file)
+    results = burn(config)
     LOG.info("program stopped")
