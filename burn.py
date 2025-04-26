@@ -151,10 +151,10 @@ class Burn(abc.ABC):
     @abc.abstractmethod
     def _device_type_plural(self) -> str: ...
 
-    def burn(self, device_config: dict) -> list[Summary]:
-        """Run matmul on all instances of the associated device type."""
-        with self.create_pool() as pool:
-            results = pool.starmap(
+    def __init__(self) -> None:
+        """Initialize a Burn object."""
+        self._results: dict[str, Summary] | None = None
+
                 self._run_on_device,
                 [[device_config]] * self._get_device_count(),
             )
@@ -170,10 +170,26 @@ class Burn(abc.ABC):
             device_config["matrix_size"],
             device_config["replicates"],
         )
-        for result in results:
-            LOG.info("%s", result.to_pretty_str())
 
+    def get_results(self) -> dict[str, Summary]:
+        """Synchronize asynchronous operations."""
+        if self._results is None:
+            raise RuntimeError
+
+        results = self._results
+        self._results = None
         return results
+
+    def _collect_result(self, result: tuple[str, Summary]) -> None:
+        if self._results is None:
+            LOG.warning("result was None")
+        else:
+            device = result[0]
+            summary = result[1]
+            self._results[device] = summary
+
+    def _log_error(self, exception: BaseException) -> None:
+        LOG.exception(exception)
 
     @abc.abstractmethod
     def create_pool(self) -> Pool:
