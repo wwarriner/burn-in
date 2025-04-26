@@ -14,12 +14,18 @@ import time
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from multiprocessing.pool import Pool as mpPool  # type hint
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 
 import numpy as np
 import scipy.stats as st
 import torch as t
 import torch.multiprocessing as tmp
-from torch.multiprocessing.pool import Pool as tmpPool  # type hint
+
+if TYPE_CHECKING:
+    from multiprocessing.pool import Pool as mpPool
+
+    from torch.multiprocessing.pool import Pool as tmpPool
+
 
 import conf
 
