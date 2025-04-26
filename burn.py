@@ -53,6 +53,8 @@ class Summary:
         mean = st.tmean(_v)
         var = st.tvar(_v)
         ci = self._bootstrap_ci(_v, confidence=confidence)
+        # abs used because we can't trust that -0.0 won't occur with 1 replicate.
+        ci_mean_proportion = (abs(mean - ci[0]) / mean, abs(ci[1] - mean) / mean)
         total = sum(_v)
 
         self.confidence: float = confidence
@@ -65,9 +67,8 @@ class Summary:
     def to_pretty_str(self) -> str:
         """Return interesting statistics in a pretty format."""
         alpha_rep = f"[alpha={1 - self.confidence:.2e}]"
-        # abs used because we can't trust that -0.0 won't occur with 1 replicate.
-        lower_ci_rep = f"-{abs(self.ci_percent[0]):.2%}"  # abs to avoid "--0.00"
-        upper_ci_rep = f"+{abs(self.ci_percent[1]):.2%}"  # abs to avoid "+-0.00"
+        lower_ci_rep = f"-{self.ci_percent[0]:.2%}"
+        upper_ci_rep = f"+{self.ci_percent[1]:.2%}"
         ci_percent_rep = f"({lower_ci_rep}, {upper_ci_rep})"
         return textwrap.dedent(
             f"""
