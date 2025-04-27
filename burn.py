@@ -23,9 +23,10 @@ import scipy.stats as st
 import torch as t
 import torch.multiprocessing as tmp
 
+import conf
+
 if TYPE_CHECKING:
     from multiprocessing.pool import Pool as mpPool
-    from pathlib import PurePath
 
     from torch.multiprocessing.pool import Pool as tmpPool
 
