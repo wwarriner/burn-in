@@ -7,5 +7,4 @@ dependencies:
   - pyyaml=6.0.2
   - schema=0.7.7
   - pip:
-      - torch==2.7.0
-      - --index-url https://download.pytorch.org/whl/cu126
+      - torch==2.6.0
