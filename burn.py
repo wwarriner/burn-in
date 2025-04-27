@@ -409,6 +409,7 @@ def to_csv(filepath: PurePath, results: dict[str, Summary]) -> None:
         stat_line = ",".join([device, *values_to_write])
         lines.append(stat_line)
 
+    Path(filepath.parent).mkdir(parents=True, exist_ok=True)
     with Path(filepath).open("w") as f:
         f.write("\n".join(lines))
 
