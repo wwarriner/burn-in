@@ -6,6 +6,7 @@ documentation
 from __future__ import annotations
 
 import abc
+import contextlib
 import logging
 import multiprocessing as mp
 import os
@@ -156,6 +157,10 @@ class Burn(abc.ABC):
     def __init__(self) -> None:
         """Initialize a Burn object."""
         self._results: dict[str, Summary] | None = None
+
+    def has_devices(self) -> bool:
+        """Return whether any devices of this type exist."""
+        return self._get_device_count() > 0
 
     def burn_async(self, device_config: dict, pool: Pool) -> None:
         """Run matmul on all instances of the associated device type.
@@ -365,23 +370,36 @@ def burn(config: dict) -> dict[str, Summary]:
     """Perform execution with supplied config."""
     cpu = CpuBurn()
     gpu = GpuBurn()
-    devices = (cpu, gpu)
+    burners_all = (cpu, gpu)
+    burners_filtered = [burner for burner in burners_all if burner.has_devices()]
+
     device_configs = (config["computation"]["cpu"], config["computation"]["gpu"])
 
     LOG.info("execution started")
-    with cpu.create_pool() as cpu_pool, gpu.create_pool() as gpu_pool:
-        pools = (cpu_pool, gpu_pool)
+    with contextlib.ExitStack() as stack:
+        pools = []
+        for burner in burners_filtered:
+            pool = stack.enter_context(burner.create_pool())
+            pools.append(pool)
 
-        for device, pool, device_config in zip(devices, pools, device_configs):
-            device.burn_async(device_config, pool)
+        if pools:
+            for burner, pool, device_config in zip(
+                burners_filtered,
+                pools,
+                device_configs,
+            ):
+                burner.burn_async(device_config, pool)
 
-        for pool in pools:
-            pool.close()
-            pool.join()
+            for pool in pools:
+                pool.close()
+                pool.join()
 
     LOG.info("execution stopped")
     LOG.info("displaying results")
-    results = {**(cpu.get_results()), **(gpu.get_results())}
+    results: dict[str, Summary] = {}
+    for burner in burners_filtered:
+        results.update(burner.get_results())
+
     for device_name, summary in results.items():
         LOG.info("device %s", device_name)
         LOG.info("%s", summary.to_pretty_str())
