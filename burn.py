@@ -279,7 +279,8 @@ class CpuBurn(Burn):
 
     def create_pool(self) -> Pool:
         """Create a CPU pool."""
-        return mp.Pool(self._get_device_count())
+        context = mp.get_context("spawn")
+        return context.Pool(self._get_device_count())
 
     @staticmethod
     def _timeit(_fn: NullFunction) -> float:
@@ -313,7 +314,8 @@ class GpuBurn(Burn):
 
     def create_pool(self) -> Pool:
         """Create a GPU pool."""
-        return tmp.Pool(self._get_device_count())
+        context = tmp.get_context("spawn")
+        return context.Pool(self._get_device_count())
 
     @staticmethod
     def _timeit(_fn: NullFunction) -> float:
