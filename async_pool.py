@@ -18,7 +18,7 @@ LOG = logging.getLogger("burn")
 _T = TypeVar("_T")
 
 
-class TorchPool:
+class AsyncPool:
     """Manages a thread with an async event loop."""
 
     def __init__(self) -> None:

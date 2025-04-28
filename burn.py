@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 import torch as t
 
 import conf
-from async_pool import TorchPool
+from async_pool import AsyncPool
 from fileops import to_csv
 from stats import Summary
 
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 LOG = logging.getLogger("burn")
 
 type NullFunction = Callable[[], None]
-type Pool = mpPool | TorchPool
+type Pool = mpPool | AsyncPool
 
 
 class Burn(abc.ABC):
@@ -214,7 +214,7 @@ class GpuBurn(Burn):
 
     def create_pool(self) -> Pool:
         """Create a GPU pool."""
-        return TorchPool()
+        return AsyncPool()
 
     @staticmethod
     def _timeit(_fn: NullFunction) -> float:
