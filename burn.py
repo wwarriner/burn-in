@@ -209,6 +209,8 @@ class GpuBurn(Burn):
         return f"cuda:{index}"
 
     def _get_device_count(self) -> int:
+        if not t.cuda.is_available():
+            LOG.warning("CUDA not available")
         return t.cuda.device_count() if t.cuda.is_available() else 0
 
     def create_pool(self) -> Pool:
