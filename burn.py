@@ -10,7 +10,6 @@ import contextlib
 import logging
 import multiprocessing as mp
 import os
-import platform
 import textwrap
 import time
 from collections.abc import Callable, Iterable, Mapping, Sequence
@@ -30,24 +29,6 @@ if TYPE_CHECKING:
 
     from torch.multiprocessing.pool import Pool as tmpPool
 
-
-def get_local_computer_info() -> str:
-    """Get identifying information about the current computer."""
-    out = platform.node()
-    if "SLURM_JOB_ID" in os.environ:
-        out += "-" + os.environ["SLURM_JOB_ID"]
-    return out
-
-
-Path("logs").mkdir(parents=True, exist_ok=True)
-LOG_LEVEL = logging.INFO
-logging.basicConfig(
-    filename=PurePath("logs") / f"{get_local_computer_info()}-burn.log",
-    filemode="a",
-    encoding="utf-8",
-    level=LOG_LEVEL,
-    format="%(levelname)s:%(asctime)s:%(funcName)s: %(message)s",
-)
 LOG = logging.getLogger("burn")
 
 type NullFunction = Callable[[], None]

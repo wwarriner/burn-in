@@ -3,12 +3,32 @@
 import argparse
 import copy
 import logging
+import os
+import platform
 import textwrap
 from pathlib import Path, PurePath
 
 import yaml
 from schema import And, Schema, SchemaError, Use
 
+
+def get_local_computer_info() -> str:
+    """Get identifying information about the current computer."""
+    out = platform.node()
+    if "SLURM_JOB_ID" in os.environ:
+        out += "-" + os.environ["SLURM_JOB_ID"]
+    return out
+
+
+Path("logs").mkdir(parents=True, exist_ok=True)
+LOG_LEVEL = logging.INFO
+logging.basicConfig(
+    filename=PurePath("logs") / f"{get_local_computer_info()}-burn.log",
+    filemode="a",
+    encoding="utf-8",
+    level=LOG_LEVEL,
+    format="%(levelname)s:%(asctime)s:%(funcName)s: %(message)s",
+)
 LOG = logging.getLogger("burn")
 
 DEFAULT_OUTPUT_FILE_PATH = PurePath("results.csv")
