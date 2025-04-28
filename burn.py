@@ -267,8 +267,6 @@ def burn(config: dict) -> dict[str, Summary]:
     burners_all = (cpu, gpu)
     burners_filtered = [burner for burner in burners_all if burner.has_devices()]
 
-    device_configs = (config["computation"]["cpu"], config["computation"]["gpu"])
-
     LOG.info("execution started")
     with contextlib.ExitStack() as stack:
         pools = []
@@ -277,12 +275,11 @@ def burn(config: dict) -> dict[str, Summary]:
             pools.append(pool)
 
         if pools:
-            for burner, pool, device_config in zip(
-                burners_filtered,
-                pools,
-                device_configs,
-            ):
-                burner.burn_async(device_config, pool)
+            for burner, pool in zip(burners_filtered, pools):
+                burner.burn_async(
+                    config["computation"][burner.device_type_singular],
+                    pool,
+                )
 
             for pool in pools:
                 pool.close()
