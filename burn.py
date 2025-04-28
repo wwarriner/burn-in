@@ -39,7 +39,9 @@ class Burn(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def _device_type_singular(self) -> str: ...
+    def device_type_singular(self) -> str:
+        """Return type of device for this burner."""
+        ...
 
     @property
     @abc.abstractmethod
@@ -74,7 +76,7 @@ class Burn(abc.ABC):
             )
         LOG.info(
             "%s: running across %d %s",
-            self._device_type_singular,
+            self.device_type_singular,
             self._get_device_count(),
             self._device_type_plural,
         )
@@ -149,7 +151,8 @@ class CpuBurn(Burn):
     """CPU implementation of Burn class."""
 
     @property
-    def _device_type_singular(self) -> str:
+    def device_type_singular(self) -> str:
+        """Return device type for CpuBurn (cpu)."""
         return "cpu"
 
     @property
@@ -192,7 +195,8 @@ class GpuBurn(Burn):
     """GPU implementation of Burn class."""
 
     @property
-    def _device_type_singular(self) -> str:
+    def device_type_singular(self) -> str:
+        """Return device type for GpuBurn (gpu)."""
         return "gpu"
 
     @property
