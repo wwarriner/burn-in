@@ -1,7 +1,4 @@
-"""Contains code to run replicates of matmul on all CPUs and GPUs.
-
-documentation
-"""
+"""Contains code to run replicates of matmul on all CPUs and GPUs."""
 
 from __future__ import annotations
 
